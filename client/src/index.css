@@ -1,0 +1,481 @@
+:root {
+  --text: #1a1a1a;
+  --muted: #8c8c8c;
+  --faint: #b3b3b3;
+  --border: #e7e7e7;
+  --bg: #ffffff;
+  --hover: #f5f5f5;
+  --danger: #c0362c;
+  --warn: #a15c00;
+
+  --sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', sans-serif;
+  --serif:
+    ui-serif, 'Source Han Serif SC', 'Noto Serif CJK SC', 'Songti SC', 'SimSun', Georgia,
+    serif;
+
+  color-scheme: light;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 var(--sans);
+}
+
+.boot {
+  height: 100vh;
+}
+
+/* ------------------------------------------------------------------ 通用组件 */
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: var(--text);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.2;
+  transition: opacity 0.15s ease;
+}
+
+.primary-button:hover {
+  opacity: 0.84;
+}
+
+.primary-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ghost-button {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  transition: background 0.15s ease;
+}
+
+.ghost-button:hover {
+  background: var(--hover);
+}
+
+.link-button {
+  color: #6b6b6b;
+  font-size: 13px;
+}
+
+.link-button:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link-button.danger {
+  color: var(--danger);
+}
+
+.icon-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.icon-button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.text-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.text-input:focus {
+  border-color: var(--text);
+}
+
+/* ------------------------------------------------------------------ 登录页 */
+
+.auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 360px;
+  padding: 40px 32px 32px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.auth-title {
+  font: 700 30px/1.2 var(--serif);
+  letter-spacing: 0.04em;
+}
+
+.auth-subtitle {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.auth-note {
+  margin-top: 18px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fdf6ec;
+  color: var(--warn);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field-hint {
+  color: var(--faint);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.auth-form .primary-button {
+  margin-top: 4px;
+}
+
+.auth-card > .link-button {
+  margin-top: 20px;
+}
+
+.auth-hint {
+  margin-top: 22px;
+  color: var(--faint);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ------------------------------------------------------------------ 小说列表 */
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 64px 24px 120px;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+
+.page-title {
+  font: 700 30px/1.2 var(--serif);
+  letter-spacing: 0.02em;
+}
+
+.novel-list {
+  border-top: 1px solid var(--border);
+}
+
+.novel-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.novel-open {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.novel-title {
+  overflow: hidden;
+  font: 600 19px/1.35 var(--serif);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.novel-open:hover .novel-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.novel-meta {
+  color: var(--faint);
+  font-size: 12.5px;
+}
+
+.novel-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 14px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.novel-card:hover .novel-actions,
+.novel-actions:focus-within {
+  opacity: 1;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 80px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ------------------------------------------------------------------ 同步徽标 */
+
+.sync-badge {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+}
+
+.sync-badge:hover .sync-badge-label {
+  color: var(--text);
+}
+
+.status-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--faint);
+}
+
+.status-dot.ok {
+  background: #2f855a;
+}
+
+.status-dot.busy {
+  background: #b7791f;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.status-dot.warn {
+  background: #b7791f;
+}
+
+.status-dot.error {
+  background: var(--danger);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+
+.sync-panel {
+  position: absolute;
+  right: 16px;
+  bottom: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(340px, calc(100vw - 32px));
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+}
+
+.panel-header strong {
+  flex: 1;
+  font-weight: 600;
+}
+
+.panel-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  font-size: 12.5px;
+}
+
+.panel-stats > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.panel-stats dt {
+  color: var(--muted);
+}
+
+.panel-stats dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.panel-server {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.server-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.server-row .text-input {
+  min-width: 0;
+  padding: 7px 9px;
+  font-size: 12.5px;
+}
+
+.server-address {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-error {
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: #fdf0ef;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.panel-section-title {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.panel-errors {
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.panel-errors li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.panel-errors span {
+  color: var(--danger);
+}
+
+.panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.panel-account {
+  color: var(--faint);
+  font-size: 12px;
+}
+
+@media (hover: none) {
+  .novel-actions {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 44px 18px 100px;
+  }
+
+  .page-title {
+    font-size: 26px;
+  }
+
+  .sync-panel {
+    right: 10px;
+    bottom: 52px;
+  }
+}

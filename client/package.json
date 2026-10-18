@@ -1,0 +1,43 @@
+{
+  "name": "writer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "安静的中文小说写作工具",
+  "author": "kleintraveler",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "electron": "npm run build && electron .",
+    "electron:build": "npm run build && electron-builder --win",
+    "android:sync": "npm run build && cap sync android",
+    "android:apk": "npm run build && cap sync android && cd android && gradlew assembleRelease",
+    "android:debug": "npm run build && cap sync android && cd android && gradlew assembleDebug",
+    "icons": "uv run --with pillow python scripts/make_icons.py"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.3",
+    "dexie": "^4.4.6",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.4",
+    "ulid": "^3.0.2",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3",
+    "oxlint": "^1.81.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  }
+}

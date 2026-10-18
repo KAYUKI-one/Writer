@@ -1,0 +1,37 @@
+appId: com.kleintraveler.writer
+productName: Writer
+copyright: Copyright © 2026
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - electron/**/*
+  - package.json
+
+asar: true
+# 没有原生 node 模块，跳过 rebuild 节省时间
+npmRebuild: false
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  icon: build/icon.ico
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: 写作
+  artifactName: Writer-${version}-setup.${ext}
+
+portable:
+  artifactName: Writer-${version}-portable.${ext}

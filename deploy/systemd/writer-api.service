@@ -1,0 +1,24 @@
+[Unit]
+Description=Writer API (FastAPI + SQLite)
+After=network.target
+
+[Service]
+Type=simple
+User=writer
+Group=writer
+WorkingDirectory=/opt/writer/server
+EnvironmentFile=/etc/writer/writer.env
+# SQLite 只允许一个写事务：必须 --workers 1
+ExecStart=/opt/writer/server/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=always
+RestartSec=2
+
+# 数据目录是唯一可写路径（WAL 文件也写在这里）
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/writer
+
+[Install]
+WantedBy=multi-user.target

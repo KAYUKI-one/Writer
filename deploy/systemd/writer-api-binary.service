@@ -1,0 +1,25 @@
+[Unit]
+Description=Writer API (single-file binary)
+After=network.target
+
+[Service]
+Type=simple
+User=writer
+Group=writer
+# 二进制、迁移脚本等只读文件放在 /opt/writer
+WorkingDirectory=/opt/writer
+EnvironmentFile=/etc/writer/writer.env
+# SQLite 只允许一个写连接，二进制内部固定单 worker
+ExecStart=/opt/writer/writer-server --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=2
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# 只有数据目录可写（WAL 文件也在这里）
+ReadWritePaths=/var/lib/writer
+
+[Install]
+WantedBy=multi-user.target
