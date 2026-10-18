@@ -182,6 +182,20 @@ Git Bash 执行，脚本会把已打包好的二进制直接 scp 上去再远程
 curl -fsSL https://github.com/KAYUKI-one/Writer/raw/main/deploy/install.sh | bash -s -- --help
 ```
 
+### 卸载
+
+默认只卸载程序，保留数据库 `/var/lib/writer` 和配置 `/etc/writer`：
+
+```bash
+./deploy/uninstall-from-local.sh root@your-server
+```
+
+连数据库、配置和 `writer` 用户一起删除（不可恢复）：
+
+```bash
+./deploy/uninstall-from-local.sh root@your-server --purge --yes
+```
+
 ### 手动部署（单文件二进制）
 
 1. 上传并放置文件：
