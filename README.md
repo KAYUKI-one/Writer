@@ -34,7 +34,7 @@ server/                 # FastAPI + SQLite
   migrations/001_init.sql
   scripts/              # init_db / export_user / sync_scenarios.sh
   tests/                # pytest（27 个）
-deploy/                 # systemd / nginx / env.example
+deploy/                 # 一键安装 / systemd / nginx / env.example
 docs/sync-protocol.md   # 前后端唯一契约
 ```
 
@@ -164,6 +164,17 @@ curl -fsSL https://github.com/KAYUKI-one/Writer/raw/main/deploy/install.sh \
 的 `/etc/writer/writer.env`、安装并启动 systemd 服务；给了 `--domain` 还会
 写 nginx 站点并申请证书。重复执行是安全的：只更新二进制并重启，不会覆盖
 已有 env 配置。
+
+如果服务器访问 GitHub 不稳定（国内较常见），可以在本地仓库根目录用
+Git Bash 执行，脚本会把已打包好的二进制直接 scp 上去再远程安装：
+
+```bash
+./deploy/deploy-from-local.sh root@your-server
+
+# 连同 nginx + HTTPS
+./deploy/deploy-from-local.sh root@your-server \
+  --domain writer.example.com --email you@example.com
+```
 
 可用参数见脚本头部，或：
 
