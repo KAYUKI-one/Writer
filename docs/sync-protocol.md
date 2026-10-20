@@ -126,9 +126,16 @@ X-Device-Id: <client ulid>
 | 行不存在，`base_version` 任意 | insert（另一端删干净了也 insert 更安全） |
 | `base_version == row.row_version` | ok，接受更新 |
 | 版本落后，`content_hash` 等于当前或上一版 | ok，正文保留服务端较新的那份；接受标题/排序 |
+| 版本落后，且 `row.last_device_id == device_id` | ok，接受更新（`resolution=stale_self`，见下） |
 | 版本落后，`content_hash` 不等于当前/上一版 | **conflict → fork** |
 | 行存在且 `deleted=1`，push 带非空正文 | **ok，复活** |
 | push `deleted=1` | 删除意图明确，照办，不分叉 |
+
+**`stale_self` 的意义**：上一次推送其实已经在服务端成功，但响应在弱网 / 切后台
+时丢了，客户端还拿着旧的 `row_version` 继续写。两种正文来自**同一台设备的前后
+两次保存**，不是两台设备并写；为它分叉会造出一个「来自本机」的假副本和假冲突。
+`last_device_id` 标记的是**当前正文**的写入设备，所以只改标题的分支不会更新它。
+两台设备并写时它仍是对方，照常分叉，不丢字。
 
 **fork（一个事务内）**：原行接受推送内容（`row_version+1`）；另建一行章节，
 `id` = 新 ULID，标题为 `原题（冲突副本 · MM-DD HH:mm · 来自 设备名）`，
@@ -139,9 +146,13 @@ X-Device-Id: <client ulid>
 | 本地状态 | 动作 |
 |---|---|
 | 不存在 | insert |
+| 本条变更是本次推送自己的回显（`seq` 与服务端回执一致且哈希是推送时那份） | 只更新版本记账；**绝不存 `shadow`**，绝不弹横幅 |
 | `dirty=0` | 覆盖为服务端版本 |
 | `dirty=1` 且服务端行版本更新 | **不覆盖正文**，存进 `shadow`，保持 dirty，弹横幅 |
 | 本地 dirty，incoming `deleted=1` | **不删**，标 `remote_deleted=1`，横幅提示 |
+
+「自己的回显」必须按 **seq + 推送时哈希** 判定，不能只看哈希相等：推送在途期间
+用户又打了字时，回显的正文会比本地旧，但这仍是同一条写作线，不是另一台设备。
 
 `shadow` 落地与 cursor 推进在**同一个 Dexie 事务**里提交。应用中途被杀时
 cursor 仍指向未处理位置，最坏是重复投递（幂等无害）。
@@ -150,6 +161,10 @@ cursor 仍指向未处理位置，最坏是重复投递（幂等无害）。
 
 - 记下推送时每条记录的 `local_seq`；ack 时只有 `local_seq` 未变才清 `dirty`。
   推送在途期间继续打字 ⇒ 保持 dirty，下一轮推上去。
+- `local_seq` 未变时同时清掉 `shadow`：服务端已确认这份正文，旧暂存要么是被
+  误存的回显，要么已经被分叉成副本，留在本地只会让横幅永远消不掉。
+  例外：`resolution=title_only` 时服务端保留的是它自己的正文，本地这份仍是
+  旧的，`shadow` 必须留着让用户选择。
 - `conflict` 结果把 `conflict_copy_id` 记到本地，横幅引导用户查看/选择。
 - `error` 结果写 `pushError`，保留 dirty，展示在同步面板。
 

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
 
+import { resizeTextarea } from '../../lib/textarea'
+
 interface BodyInputProps {
   textareaRef: RefObject<HTMLTextAreaElement | null>
   defaultValue: string
@@ -27,9 +29,7 @@ export function BodyInput({
 
   const resize = useCallback(() => {
     const ta = textareaRef.current
-    if (!ta) return
-    ta.style.height = 'auto'
-    ta.style.height = `${ta.scrollHeight}px`
+    if (ta) resizeTextarea(ta)
   }, [textareaRef])
 
   useEffect(() => {

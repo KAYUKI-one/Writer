@@ -82,7 +82,7 @@ async function runSync(reason: string): Promise<void> {
       // 每次同步都校准时钟偏移。客户端时钟只用于显示，权威判定全在服务端。
       setServerOffset(resp.server_time_ms - Date.now())
 
-      await applyPull(resp)
+      await applyPull(resp, request.push)
       await ackPush(resp, pushedLocalSeq)
 
       if (resp.renewed_token) await tokenStore.set(resp.renewed_token)
@@ -141,6 +141,13 @@ async function ackPush(
       // 忘了这一条 = 稳定丢掉最后几秒的输入，而且极难复现。
       if (record.local_seq === pushedLocalSeq.get(result.id)) {
         patch.dirty = 0
+        // 服务端确认的是「我们推上去的正文」时，旧 shadow 要么是被误存的
+        // 回显，要么已经被分叉成副本 —— 留在本地只会让横幅永远消不掉。
+        // title_only 是例外：服务端保留的是**它自己的**较新正文，本地这份
+        // 仍是旧的，shadow 还必须留着让用户选择。
+        if (result.entity === 'chapter' && result.resolution !== 'title_only') {
+          patch.shadow = null
+        }
       }
 
       await table.update(result.id, patch)

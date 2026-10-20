@@ -236,6 +236,96 @@ def test_retry_with_same_op_id_does_not_duplicate_fork(client, account, second_d
     assert len(copies) == 1, f"重试不该重复分叉，实际有 {len(copies)} 个副本"
 
 
+# ------------------------------------------- 场景 6：同一台设备丢回执，不分叉
+
+
+def test_lost_ack_retry_from_same_device_does_not_fork(client, account):
+    """上一次推送已在服务端成功、响应在弱网里丢了，同一台设备拿着旧 base 再推。
+
+    两个版本都是这台设备自己写的，不是两台设备并写；分叉只会造出一个
+    「来自本机」的假副本和假冲突。
+    """
+    token, device = account
+    novel_id = _setup_novel(client, token, device)
+    chapter_id, _ = _create_chapter(client, token, device, novel_id, "第一版")
+
+    # 第一次推送：服务端成功（row_version=2）。假设响应丢失，客户端没记下。
+    resp = sync(
+        client,
+        token,
+        device,
+        push=[chapter_item(chapter_id, novel_id, title="第一章", content="第二版", base_version=1)],
+    )
+    assert find_result(resp, "chapter", chapter_id)["status"] == "ok"
+
+    # 客户端仍以为 base_version=1，又续写了一段
+    resp = sync(
+        client,
+        token,
+        device,
+        push=[chapter_item(chapter_id, novel_id, title="第一章", content="第二版续写", base_version=1)],
+    )
+    result = find_result(resp, "chapter", chapter_id)
+
+    assert result["status"] == "ok", "同一台设备的两次保存不该判成冲突"
+    assert result["resolution"] == "stale_self"
+    assert result["conflict_copy_id"] is None
+
+    resp = _pull(client, token, device, 0)
+    copies = [
+        c
+        for c in resp["changes"]
+        if c["entity"] == "chapter" and (c.get("data") or {}).get("conflict_of") == chapter_id
+    ]
+    assert copies == [], "同一台设备的重试不该产生冲突副本"
+
+    change = next(c for c in resp["changes"] if c["id"] == chapter_id)
+    assert change["data"]["content"] == "第二版续写"
+
+
+def test_title_only_change_does_not_mask_real_conflict(client, account, second_device):
+    """只改标题不能把 last_device_id 改成推送方，否则真正的双设备冲突会被吞掉。
+
+    ``last_device_id`` 标记的是**当前正文**的写入设备。
+    """
+    token_a, device_a = account
+    token_b, device_b = second_device
+
+    novel_id = _setup_novel(client, token_a, device_a)
+    chapter_id, _ = _create_chapter(client, token_a, device_a, novel_id, "原文")
+
+    # B 改正文 → 当前正文来自 B
+    sync(
+        client,
+        token_b,
+        device_b,
+        push=[chapter_item(chapter_id, novel_id, title="第一章", content="B 写的", base_version=1)],
+    )
+
+    # A 基于旧版本只改标题（正文仍是它手里的「原文」）→ title_only
+    resp = sync(
+        client,
+        token_a,
+        device_a,
+        push=[chapter_item(chapter_id, novel_id, title="第一章·A", content="原文", base_version=1)],
+    )
+    assert find_result(resp, "chapter", chapter_id)["resolution"] == "title_only"
+
+    # A 接着改正文，base 仍是 1；当前正文来自 B，必须分叉而不是被 A 覆盖
+    resp = sync(
+        client,
+        token_a,
+        device_a,
+        push=[
+            chapter_item(chapter_id, novel_id, title="第一章·A", content="A 又写的", base_version=1)
+        ],
+    )
+    result = find_result(resp, "chapter", chapter_id)
+
+    assert result["status"] == "conflict", "当前正文来自另一台设备，不能被 stale_self 规则吞掉"
+    assert result["server_previous"]["content"] == "B 写的"
+
+
 # ------------------------------------------------------- 场景 8：superseded 折叠
 
 

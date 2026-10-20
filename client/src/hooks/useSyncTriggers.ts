@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { repairStaleShadows } from '../db/repo.chapters'
 import { flushAll } from '../lib/flushRegistry'
 import { useSyncStatus } from '../stores/syncStatus'
 import { requestSync } from '../sync/engine'
@@ -20,7 +21,8 @@ export function useSyncTriggers(): void {
   useEffect(() => {
     let hiddenAt: number | null = null
 
-    void useSyncStatus.getState().refresh()
+    // 旧版本的假 shadow 只影响本地显示，先就地清掉再开始同步
+    void repairStaleShadows().finally(() => useSyncStatus.getState().refresh())
     void requestSync('startup')
 
     const onOnline = () => void requestSync('online')

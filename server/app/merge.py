@@ -280,11 +280,13 @@ def _apply_chapter(
 
         # 正文保持服务端较新的那份，只接受标题和排序。
         # 标题短、信息量低，为它分叉只会制造噪音。
+        #
+        # **不要更新 last_device_id**：正文仍来自之前那台设备，
+        # 它标记的是「当前正文是谁写的」，下面的分叉判定依赖这一点。
         row.title = item.title
         row.sort_order = item.sort_order
         row.row_version += 1
         row.updated_at_ms = changed_at_ms
-        row.last_device_id = device_id
         seq = record_change(
             session,
             user_id=user.id,
@@ -297,6 +299,31 @@ def _apply_chapter(
         )
         row.server_seq = seq
         return _ok("chapter", item.id, row, seq=seq, resolution="title_only")
+
+    # --- 版本落后，但服务端当前正文本来就是这台设备写的 ---
+    #
+    # 典型场景：上一次推送已经在服务端成功，但响应在弱网 / 切后台时丢了，
+    # App 也没来得及记下新的 row_version。用户继续写了几个字后再同步，
+    # 服务端看到的是一个「落后版本 + 不同正文」的推送 —— 但这两种正文
+    # 来自**同一台设备的前后两次保存**，不是两台设备并写。
+    # 为它分叉只会造出一个「来自本机」的假副本，弹出假的冲突横幅。
+    # 直接接受这台设备的最新内容；两台设备并写时 last_device_id 是对方，
+    # 仍走下面的分叉分支，一个字都不会丢。
+    if row.last_device_id == device_id:
+        _fill_chapter(row, item, changed_at_ms, device_id)
+        row.row_version += 1
+        seq = record_change(
+            session,
+            user_id=user.id,
+            entity="chapter",
+            entity_id=row.id,
+            row_version=row.row_version,
+            op="upsert",
+            changed_at_ms=changed_at_ms,
+            origin_device=device_id,
+        )
+        row.server_seq = seq
+        return _ok("chapter", item.id, row, seq=seq, resolution="stale_self")
 
     # --- 真冲突：正文两边都改了 → 分叉 ---
     return _fork_chapter(

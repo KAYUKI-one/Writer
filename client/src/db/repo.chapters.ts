@@ -10,6 +10,7 @@ import type { LocalChapter } from './schema'
 
 const now = () => Date.now()
 const EMPTY_HASH = sha256Hex('')
+const META_SHADOW_REPAIR = 'shadow_repair_v1'
 
 export async function listChapters(novelId: string): Promise<LocalChapter[]> {
   const all = await db.chapters.where('novel_id').equals(novelId).toArray()
@@ -101,6 +102,26 @@ export async function countDirty(): Promise<number> {
 
 export async function hasDirty(): Promise<boolean> {
   return (await countDirty()) > 0
+}
+
+/**
+ * 一次性清理旧版本留下的假冲突。
+ *
+ * 旧版客户端在「推送在途期间继续打字」时，会把自家推送的回显误存成 shadow；
+ * ack 之后 dirty 已经清零，于是这条 shadow 永远留在了本地。
+ * **真实冲突在用户做出选择前一定保持 dirty=1**，所以 dirty=0 还挂着 shadow
+ * 的记录只可能是过期的，直接清掉。副本类冲突（conflict_copy_id）不动 ——
+ * 副本是服务器上真实存在的章节。
+ */
+export async function repairStaleShadows(): Promise<void> {
+  if (await db.meta.get(META_SHADOW_REPAIR)) return
+
+  await db.transaction('rw', db.chapters, db.meta, async () => {
+    await db.chapters
+      .filter((c) => c.dirty === 0 && c.shadow !== null)
+      .modify({ shadow: null })
+    await db.meta.put({ key: META_SHADOW_REPAIR, value: 1 })
+  })
 }
 
 /** 有未解决冲突的章节数。 */

@@ -11,6 +11,7 @@ import {
 } from '../../db/repo.chapters'
 import type { LocalChapter } from '../../db/schema'
 import { useAutosave } from '../../hooks/useAutosave'
+import { resizeTextarea } from '../../lib/textarea'
 import { countWords, formatCount } from '../../lib/wordcount'
 import { requestSync } from '../../sync/engine'
 import { BodyInput } from './BodyInput'
@@ -86,8 +87,7 @@ export function ChapterEditor({
     if (!ta || chapter.dirty === 1 || document.activeElement === ta) return
     ta.value = next
     contentDraft.current = next
-    ta.style.height = 'auto'
-    ta.style.height = `${ta.scrollHeight}px`
+    resizeTextarea(ta)
     setWords(chapter.words)
   }, [chapter.content, chapter.dirty, chapter.words])
 
