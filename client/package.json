@@ -1,7 +1,7 @@
 {
   "name": "writer",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "安静的中文小说写作工具",
   "author": "kleintraveler",
   "type": "module",

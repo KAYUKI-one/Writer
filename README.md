@@ -33,7 +33,7 @@ server/                 # FastAPI + SQLite
   app/                  # config/db/models/schemas/security/deps/log/merge/routers
   migrations/001_init.sql
   scripts/              # init_db / export_user / sync_scenarios.sh
-  tests/                # pytest（27 个）
+  tests/                # pytest（29 个）
 deploy/                 # 一键安装 / systemd / nginx / env.example
 docs/sync-protocol.md   # 前后端唯一契约
 ```
@@ -91,8 +91,8 @@ npm run electron:build
 
 产物在 `client/release/`：
 
-- `Writer-1.0.0-setup.exe` —— NSIS 安装包（当前用户安装，无需管理员）
-- `Writer-1.0.0-portable.exe` —— 免安装单文件
+- `Writer-1.0.1-setup.exe` —— NSIS 安装包（当前用户安装，无需管理员）
+- `Writer-1.0.1-portable.exe` —— 免安装单文件
 
 国内网络可加镜像：
 
